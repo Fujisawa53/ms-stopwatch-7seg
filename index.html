@@ -7,7 +7,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Stopwatch">
-<meta name="theme-color" content="#1c1c1e">
+<meta name="theme-color" content="#0c0c0e">
 <link rel="manifest" href="manifest.webmanifest">
 <title>Stopwatch</title>
 <style>
@@ -20,7 +20,7 @@
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 html,body{
   height:100%;
-  background:#1c1c1e;
+  background:#0c0c0e;
   overflow:hidden;
   font-family:-apple-system,system-ui,sans-serif;
   touch-action:manipulation;
@@ -40,6 +40,8 @@ body{
   line-height:0.9;
   white-space:nowrap;
   font-family:'DSEG7',monospace;
+  /* 視覚的中心がやや上寄りに見えるため、ほんの少し下げる */
+  transform:translateY(3%);
 }
 /* 横位置(推奨): 幅基準で「S.MMM」が必ず収まり最大化 */
 #sec, #dot{

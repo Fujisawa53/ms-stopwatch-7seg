@@ -1,5 +1,5 @@
 // 単純な cache-first Service Worker（オフライン起動用）
-const CACHE = 'stopwatch-v3';
+const CACHE = 'stopwatch-v4';
 const ASSETS = ['./', './index.html', './manifest.webmanifest'];
 
 self.addEventListener('install', (e) => {
