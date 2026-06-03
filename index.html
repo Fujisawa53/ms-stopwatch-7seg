@@ -31,8 +31,8 @@ body{
   justify-content:center;
   color:#0FA03E;
   cursor:pointer;
-  /* 左右はノッチ/インカメラ回避のため safe-area に加えて最低 7vw 確保 */
-  padding:env(safe-area-inset-top) calc(env(safe-area-inset-right) + 7vw) env(safe-area-inset-bottom) calc(env(safe-area-inset-left) + 7vw);
+  /* 左右はノッチ/インカメラ回避のため safe-area に加えて最低 6vw 確保 */
+  padding:env(safe-area-inset-top) calc(env(safe-area-inset-right) + 6vw) env(safe-area-inset-bottom) calc(env(safe-area-inset-left) + 6vw);
 }
 #display{
   display:flex;
@@ -43,11 +43,11 @@ body{
 }
 /* 横位置(推奨): 幅基準で「S.MMM」が必ず収まり最大化 */
 #sec, #dot{
-  font-size:13vw;
+  font-size:14vw;
   opacity:0.5;
 }
 #ms{
-  font-size:23vw;
+  font-size:25vw;
   margin-left:0.04em;
 }
 /* 縦持ち時の保険レイアウト */
