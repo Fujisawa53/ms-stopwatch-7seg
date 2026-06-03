@@ -1,0 +1,10 @@
+{
+  "name": "Stopwatch",
+  "short_name": "Stopwatch",
+  "display": "standalone",
+  "orientation": "landscape",
+  "background_color": "#1c1c1e",
+  "theme_color": "#1c1c1e",
+  "start_url": "./index.html",
+  "scope": "./"
+}
