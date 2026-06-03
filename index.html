@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no,minimum-scale=1,maximum-scale=1">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Stopwatch">
 <meta name="theme-color" content="#1c1c1e">
@@ -30,7 +31,8 @@ body{
   justify-content:center;
   color:#0FA03E;
   cursor:pointer;
-  padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  /* 左右はノッチ/インカメラ回避のため safe-area に加えて最低 7vw 確保 */
+  padding:env(safe-area-inset-top) calc(env(safe-area-inset-right) + 7vw) env(safe-area-inset-bottom) calc(env(safe-area-inset-left) + 7vw);
 }
 #display{
   display:flex;
@@ -41,11 +43,11 @@ body{
 }
 /* 横位置(推奨): 幅基準で「S.MMM」が必ず収まり最大化 */
 #sec, #dot{
-  font-size:15vw;
+  font-size:13vw;
   opacity:0.5;
 }
 #ms{
-  font-size:27vw;
+  font-size:23vw;
   margin-left:0.04em;
 }
 /* 縦持ち時の保険レイアウト */
