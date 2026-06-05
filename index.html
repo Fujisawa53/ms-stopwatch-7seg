@@ -40,8 +40,24 @@ body{
   line-height:0.9;
   white-space:nowrap;
   font-family:'DSEG7',monospace;
-  /* 視覚的中心がやや上寄りに見えるため、ほんの少し下げる */
-  transform:translateY(3%);
+  /* 視覚的中心がやや上寄りに見えるため、少し下げる */
+  transform:translateY(8%);
+}
+/* 下部の小さな fps 表示 */
+#fps{
+  position:fixed;
+  left:0;
+  right:0;
+  bottom:calc(env(safe-area-inset-bottom) + 2vh);
+  text-align:center;
+  font-family:-apple-system,system-ui,sans-serif;
+  font-variant-numeric:tabular-nums;
+  font-size:2.6vw;
+  font-weight:500;
+  letter-spacing:0.12em;
+  color:#0FA03E;
+  opacity:0.3;
+  pointer-events:none;
 }
 /* 横位置(推奨): 幅基準で「S.MMM」が必ず収まり最大化 */
 #sec, #dot{
@@ -65,35 +81,47 @@ body{
 <div id="display">
   <span id="sec">0</span><span id="dot">.</span><span id="ms">000</span>
 </div>
+<div id="fps">-- fps</div>
 <script>
 'use strict';
 const secEl = document.getElementById('sec');
 const msEl  = document.getElementById('ms');
-let startTime = 0, elapsed = 0, running = false, rafId = null;
+const fpsEl = document.getElementById('fps');
+let startTime = 0, elapsed = 0, running = false;
 
 function render(t){
   const total = Math.floor(t);
   secEl.textContent = String(Math.floor(total / 1000) % 100).padStart(2, '0');
   msEl.textContent  = String(total % 1000).padStart(3, '0');
 }
-function tick(){
-  render(elapsed + (performance.now() - startTime));
-  rafId = requestAnimationFrame(tick);
+
+// 常駐ループ: fps を常時計測し、計測中はストップウォッチも描画する
+let frames = 0, fpsAnchor = 0;
+function loop(now){
+  frames++;
+  if (!fpsAnchor) fpsAnchor = now;
+  const span = now - fpsAnchor;
+  if (span >= 500){
+    fpsEl.textContent = Math.round(frames * 1000 / span) + ' fps';
+    frames = 0;
+    fpsAnchor = now;
+  }
+  if (running) render(elapsed + (performance.now() - startTime));
+  requestAnimationFrame(loop);
 }
+requestAnimationFrame(loop);
+
 function startStop(){
   if (running){
     elapsed += performance.now() - startTime;
     running = false;
-    cancelAnimationFrame(rafId);
     render(elapsed);
   } else {
     startTime = performance.now();
     running = true;
-    tick();
   }
 }
 function reset(){
-  cancelAnimationFrame(rafId);
   running = false;
   elapsed = 0;
   render(0);
