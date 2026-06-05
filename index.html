@@ -77,28 +77,28 @@ body{
   justify-content:center;
   gap:2.2vw;
 }
+#dots{ gap:1.5vw; }
 #dots span{
-  width:2.3vw;
-  height:2.3vw;
+  width:1.5vw;
+  height:1.5vw;
   border-radius:50%;
   background:currentColor;
-  box-shadow:0 0 6px currentColor;
+  box-shadow:0 0 4px currentColor;
 }
 #reset{
   flex:0 0 auto;
   min-width:9vw;
-  text-align:right;
-  font-family:ui-monospace,'SF Mono','Menlo',monospace;
-  font-size:1.9vw;
-  font-weight:600;
-  letter-spacing:0.14em;
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
   color:#0FA03E;
   opacity:0.42;
   background:none;
   border:none;
-  padding:1.4vw 0;
+  padding:1.2vw 0;
   cursor:pointer;
 }
+#reset svg{ width:3.2vw; height:3.2vw; }
 #reset:active{opacity:0.9}
 /* 横位置(推奨): 幅基準で「S.MMM」が必ず収まり最大化 */
 #sec, #dot{
@@ -127,7 +127,12 @@ body{
   <div id="dots">
     <span style="color:#FF3B30"></span><span style="color:#FF9500"></span><span style="color:#FFD60A"></span><span style="color:#30D158"></span><span style="color:#64D2FF"></span><span style="color:#0A84FF"></span><span style="color:#BF5AF2"></span>
   </div>
-  <button id="reset" type="button">RESET</button>
+  <button id="reset" type="button" aria-label="reset">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M3 12a9 9 0 1 0 2.64-6.36"/>
+      <polyline points="3 4 3 9.5 8.5 9.5"/>
+    </svg>
+  </button>
 </div>
 <script>
 'use strict';
@@ -195,6 +200,8 @@ document.getElementById('reset').addEventListener('click', e => {
   e.stopPropagation();
   reset();
 });
+// SVG など子要素経由のタップでもバブリングを確実に止める
+document.getElementById('reset').addEventListener('pointerup', e => e.stopPropagation());
 document.addEventListener('visibilitychange', () => {
   if (document.hidden && running){
     elapsed += performance.now() - startTime;
