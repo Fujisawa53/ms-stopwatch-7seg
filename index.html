@@ -89,6 +89,16 @@ body{ color:var(--fg); cursor:pointer; }
   color:var(--fg);
   opacity:0.3;
 }
+/* 常時表示の現在バージョン(キャッシュ/未pushの取り違え防止) */
+#ver{
+  flex:0 0 auto;
+  font-family:ui-monospace,'SF Mono','Menlo',monospace;
+  font-size:1.7vmax;
+  font-weight:500;
+  letter-spacing:0.1em;
+  color:var(--fg);
+  opacity:0.3;
+}
 #tools{
   flex:0 0 auto;
   display:flex;
@@ -144,6 +154,7 @@ body{ color:var(--fg); cursor:pointer; }
 </div>
 <div id="bar">
   <div id="fps">--FPS</div>
+  <div id="ver"></div>
   <div id="tools">
     <button id="palette" type="button" aria-label="palette">
       <svg viewBox="0 0 24 24">
@@ -172,6 +183,8 @@ body{ color:var(--fg); cursor:pointer; }
 const secEl = document.getElementById('sec');
 const msEl  = document.getElementById('ms');
 const fpsEl = document.getElementById('fps');
+const VERSION = 'v29';                                  // ← 画面表示 & SW(sw.js)の CACHE と必ず一致させる
+document.getElementById('ver').textContent = VERSION;
 let startTime = 0, elapsed = 0, running = false;
 
 // 常に横レイアウト: 縦持ち時はステージを実ピクセルで横向きに組んで 90° 回転。
