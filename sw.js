@@ -1,5 +1,5 @@
 // HTML は network-first（常に最新）/ 静的アセットは cache-first。オフライン時はキャッシュにフォールバック
-const CACHE = 'mscounter-v31';
+const CACHE = 'mscounter-v32';
 const ASSETS = ['./', './index.html', './manifest.webmanifest',
   './icons/icon-180.png', './icons/icon-192.png', './icons/icon-512.png'];
 
