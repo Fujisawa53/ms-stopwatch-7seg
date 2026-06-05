@@ -47,7 +47,8 @@ body{ color:var(--fg); cursor:pointer; }
   top:0;
   left:0;
   transform-origin:top left;
-  transform:rotate(90deg) translateY(-100%);
+  /* --corx/--cory = 描画後に JS が実測して入れる「画面中央へのズレ補正」(スクリーン空間) */
+  transform:translate(var(--corx,0px),var(--cory,0px)) rotate(90deg) translateY(-100%);
 }
 #display{
   display:flex;
@@ -180,6 +181,7 @@ let startTime = 0, elapsed = 0, running = false;
 //   ・よって screen で画面全体を充填して中央寄せし、下端ツールの切れは
 //     バー側の safe-area (#stage.rot #bar) だけで内側に逃がす。
 const stageEl = document.getElementById('stage');
+const displayEl = document.getElementById('display');
 function layoutStage(){
   const sw = screen.width  || window.innerWidth;
   const sh = screen.height || window.innerHeight;
@@ -196,6 +198,29 @@ function layoutStage(){
     stageEl.style.height = '';
     stageEl.classList.remove('rot');
   }
+  // 計測ベースの自己補正: 次フレームで実位置を測って中央へ寄せる
+  requestAnimationFrame(recenter);
+}
+// #stage を実際にレンダリングした位置を getBoundingClientRect で測定し、数字ブロックの
+// 中心を「可視ビューポート中心」に一致させる補正 translate を当てる。端末ごとの viewport
+// 値の癖 (innerHeight/screen/vv のズレ) に依存せず、ピクセル単位で必ず中央に来る。
+function recenter(){
+  if (!stageEl.classList.contains('rot')){      // 横持ちはネイティブ中央寄せ、補正不要
+    stageEl.style.removeProperty('--corx');
+    stageEl.style.removeProperty('--cory');
+    updateDebug();
+    return;
+  }
+  stageEl.style.setProperty('--corx','0px');     // 補正を一旦ゼロにして素の位置を測る
+  stageEl.style.setProperty('--cory','0px');
+  const r = displayEl.getBoundingClientRect();
+  const cx = r.left + r.width  / 2;
+  const cy = r.top  + r.height / 2;
+  const vv = window.visualViewport;
+  const tx = vv ? vv.offsetLeft + vv.width  / 2 : window.innerWidth  / 2;
+  const ty = vv ? vv.offsetTop  + vv.height / 2 : window.innerHeight / 2;
+  stageEl.style.setProperty('--corx', (tx - cx).toFixed(2) + 'px');
+  stageEl.style.setProperty('--cory', (ty - cy).toFixed(2) + 'px');
   updateDebug();
 }
 ['resize','orientationchange'].forEach(ev => window.addEventListener(ev, layoutStage));
@@ -218,7 +243,8 @@ function updateDebug(){
     `screen ${screen.width}x${screen.height} | `+
     `vv ${vv ? Math.round(vv.width)+'x'+Math.round(vv.height)+'@y'+Math.round(vv.offsetTop) : '-'} | `+
     `docEl ${document.documentElement.clientWidth}x${document.documentElement.clientHeight} | `+
-    `safe ${getSafe()}`;
+    `safe ${getSafe()} | `+
+    `cor ${stageEl.style.getPropertyValue('--corx')||'0'}/${stageEl.style.getPropertyValue('--cory')||'0'}`;
 }
 window.addEventListener('hashchange', layoutStage);
 layoutStage();
