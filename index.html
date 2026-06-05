@@ -46,7 +46,7 @@ body{
   /* 視覚的中心がやや上寄りに見えるため、少し下げる */
   transform:translateY(8%);
 }
-/* 下部バー: 左=FPS / 中央=カラードット / 右=RESET */
+/* 下部バー: 左=FPS / 右=ツール(パレット + 復帰) */
 #bar{
   position:fixed;
   left:0;
@@ -60,7 +60,6 @@ body{
 }
 #fps{
   flex:0 0 auto;
-  min-width:9vw;
   text-align:left;
   font-family:ui-monospace,'SF Mono','Menlo',monospace;
   font-variant-numeric:tabular-nums;
@@ -70,36 +69,25 @@ body{
   color:#0FA03E;
   opacity:0.3;
 }
-#dots{
-  flex:1 1 auto;
+#tools{
+  flex:0 0 auto;
+  display:flex;
+  align-items:center;
+  gap:3.4vw;
+}
+#tools button{
   display:flex;
   align-items:center;
   justify-content:center;
-  gap:2.2vw;
-}
-#dots{ gap:1.5vw; }
-#dots span{
-  width:1.5vw;
-  height:1.5vw;
-  border-radius:50%;
-  background:currentColor;
-  box-shadow:0 0 4px currentColor;
-}
-#reset{
-  flex:0 0 auto;
-  min-width:9vw;
-  display:flex;
-  align-items:center;
-  justify-content:flex-end;
-  color:#0FA03E;
-  opacity:0.42;
   background:none;
   border:none;
-  padding:1.2vw 0;
+  padding:1vw;
   cursor:pointer;
 }
-#reset svg{ width:3.2vw; height:3.2vw; }
-#reset:active{opacity:0.9}
+#tools button:active{transform:scale(0.9)}
+#palette svg{ width:3.4vw; height:3.4vw; }
+#reset{ color:#0FA03E; opacity:0.5; }
+#reset svg{ width:3.4vw; height:3.4vw; }
 /* 横位置(推奨): 幅基準で「S.MMM」が必ず収まり最大化 */
 #sec, #dot{
   font-size:14vw;
@@ -124,15 +112,21 @@ body{
 </div>
 <div id="bar">
   <div id="fps">--FPS</div>
-  <div id="dots">
-    <span style="color:#FF3B30"></span><span style="color:#FF9500"></span><span style="color:#FFD60A"></span><span style="color:#30D158"></span><span style="color:#64D2FF"></span><span style="color:#0A84FF"></span><span style="color:#BF5AF2"></span>
+  <div id="tools">
+    <button id="palette" type="button" aria-label="palette">
+      <svg viewBox="0 0 24 24">
+        <circle cx="8"  cy="8"  r="3.4" fill="#FF3B30"/>
+        <circle cx="16" cy="8"  r="3.4" fill="#FFD60A"/>
+        <circle cx="8"  cy="16" r="3.4" fill="#30D158"/>
+        <circle cx="16" cy="16" r="3.4" fill="#0A84FF"/>
+      </svg>
+    </button>
+    <button id="reset" type="button" aria-label="reset">
+      <svg viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/>
+      </svg>
+    </button>
   </div>
-  <button id="reset" type="button" aria-label="reset">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M3 12a9 9 0 1 0 2.64-6.36"/>
-      <polyline points="3 4 3 9.5 8.5 9.5"/>
-    </svg>
-  </button>
 </div>
 <script>
 'use strict';
@@ -200,8 +194,14 @@ document.getElementById('reset').addEventListener('click', e => {
   e.stopPropagation();
   reset();
 });
+// パレット (現状はプレースホルダ: 動作未割当)
+document.getElementById('palette').addEventListener('click', e => {
+  e.stopPropagation();
+});
 // SVG など子要素経由のタップでもバブリングを確実に止める
-document.getElementById('reset').addEventListener('pointerup', e => e.stopPropagation());
+['reset','palette'].forEach(id =>
+  document.getElementById(id).addEventListener('pointerup', e => e.stopPropagation())
+);
 document.addEventListener('visibilitychange', () => {
   if (document.hidden && running){
     elapsed += performance.now() - startTime;
