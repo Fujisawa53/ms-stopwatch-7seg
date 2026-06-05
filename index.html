@@ -48,9 +48,6 @@ body{ color:var(--fg); cursor:pointer; }
   left:0;
   transform-origin:top left;
   transform:rotate(90deg) translateY(-100%);
-  /* 縦持ち時は 数字 + アイコン行 を縦に積んだ中央グループにする
-     (横持ちのように端いっぱいに引き裂かない) */
-  flex-direction:column;
 }
 #display{
   display:flex;
@@ -71,15 +68,14 @@ body{ color:var(--fg); cursor:pointer; }
   justify-content:space-between;
   gap:3vmax;
 }
-/* 縦持ち時のアイコン行: 画面端への絶対配置をやめ、数字のすぐ下に
-   コンパクトな中央寄せの行として置く (FPS・ver・パレット・復帰をまとめる) */
+/* 縦持ち(回転)時の safe-area 再割り当て:
+   回転で landscape-left→画面上端 / landscape-right→画面下端(ホームインジケータ) /
+   landscape-bottom→画面左端 に軸が入れ替わるため、env を対応する辺へ付け替える。
+   これでツール(landscape-right=画面下端)がホームインジケータより内側に収まり、切れない */
 #stage.rot #bar{
-  position:static;
-  left:auto; right:auto; bottom:auto;
-  width:auto;
-  justify-content:center;
-  gap:6vmax;
-  margin-top:3.5vmax;
+  left:calc(6vmax + env(safe-area-inset-top));
+  right:calc(6vmax + env(safe-area-inset-bottom));
+  bottom:calc(1.8vmin + env(safe-area-inset-left));
 }
 #fps{
   flex:0 0 auto;
@@ -186,7 +182,7 @@ body{ color:var(--fg); cursor:pointer; }
 const secEl = document.getElementById('sec');
 const msEl  = document.getElementById('ms');
 const fpsEl = document.getElementById('fps');
-const VERSION = 'v32';                                  // ← 画面表示 & SW(sw.js)の CACHE と必ず一致させる
+const VERSION = 'v33';                                  // ← 画面表示 & SW(sw.js)の CACHE と必ず一致させる
 document.getElementById('ver').textContent = VERSION;
 let startTime = 0, elapsed = 0, running = false;
 
