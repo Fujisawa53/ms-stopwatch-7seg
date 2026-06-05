@@ -174,19 +174,22 @@ const fpsEl = document.getElementById('fps');
 let startTime = 0, elapsed = 0, running = false;
 
 // 常に横レイアウト: 縦持ち時はステージを実ピクセルで横向きに組んで 90° 回転。
-// 寸法は「実使用領域」= visualViewport (無ければ inner) から組む。
-//   ・screen (物理全体) を使うと standalone で下端ツールがホームインジケータ帯に
-//     押し出されて切れる (v23 の不具合)。
-//   ・innerWidth/innerHeight / visualViewport / docEl は実測で一致が確認でき、
-//     これが信頼できる実使用領域。
+// 寸法は「物理画面全体」= screen から組み、画面中央に正しく中央寄せする。
+//   ・visualViewport は standalone で下部(ホームインジケータ帯)を除いた高さを返し、
+//     それで組むとステージが下端まで届かず上寄りになる (v24 の不具合)。
+//   ・よって screen で画面全体を充填して中央寄せし、下端ツールの切れは
+//     バー側の safe-area (#stage.rot #bar) だけで内側に逃がす。
 const stageEl = document.getElementById('stage');
 function layoutStage(){
+  const sw = screen.width  || window.innerWidth;
+  const sh = screen.height || window.innerHeight;
+  const LONG  = Math.max(sw, sh);
+  const SHORT = Math.min(sw, sh);
   const vv = window.visualViewport;
-  const w = vv ? Math.round(vv.width)  : window.innerWidth;
-  const h = vv ? Math.round(vv.height) : window.innerHeight;
-  if (h > w){             // 縦持ち → 横レイアウトを回転表示 (実使用領域を充填)
-    stageEl.style.width  = h + 'px';   // 長辺
-    stageEl.style.height = w + 'px';   // 短辺
+  const portrait = vv ? vv.height > vv.width : window.innerHeight > window.innerWidth;
+  if (portrait){          // 縦持ち → 横レイアウトを回転表示 (画面全体を充填し中央寄せ)
+    stageEl.style.width  = LONG  + 'px';   // 長辺 = 画面の高さ方向
+    stageEl.style.height = SHORT + 'px';   // 短辺 = 画面の幅方向
     stageEl.classList.add('rot');
   } else {                // 横持ち → 通常
     stageEl.style.width  = '';
