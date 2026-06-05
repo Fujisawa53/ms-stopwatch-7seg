@@ -81,7 +81,7 @@ body{
 <div id="display">
   <span id="sec">0</span><span id="dot">.</span><span id="ms">000</span>
 </div>
-<div id="fps">-- fps</div>
+<div id="fps">--FPS</div>
 <script>
 'use strict';
 const secEl = document.getElementById('sec');
@@ -102,7 +102,7 @@ function loop(now){
   if (!fpsAnchor) fpsAnchor = now;
   const span = now - fpsAnchor;
   if (span >= 500){
-    fpsEl.textContent = Math.round(frames * 1000 / span) + ' fps';
+    fpsEl.textContent = Math.round(frames * 1000 / span) + 'FPS';
     frames = 0;
     fpsAnchor = now;
   }
