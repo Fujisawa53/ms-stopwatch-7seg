@@ -56,16 +56,26 @@ body{ color:var(--fg); cursor:pointer; }
   white-space:nowrap;
   font-family:'DSEG7',monospace;
 }
-/* 下部バー: 左=FPS / 右=ツール(パレット + 復帰) */
+/* 下部バー: 左=FPS / 右=ツール(パレット + 復帰)。
+   横持ち(通常)時の safe-area: 左右はノッチ耳、下端はホームインジケータ */
 #bar{
   position:absolute;
-  left:6vmax;
-  right:6vmax;
-  bottom:calc(env(safe-area-inset-bottom) + 1.8vmin);
+  left:calc(6vmax + env(safe-area-inset-left));
+  right:calc(6vmax + env(safe-area-inset-right));
+  bottom:calc(1.8vmin + env(safe-area-inset-bottom));
   display:flex;
   align-items:center;
   justify-content:space-between;
   gap:3vmax;
+}
+/* 縦持ち(回転)時の safe-area 再割り当て:
+   回転で landscape-left→画面上端 / landscape-right→画面下端(ホームインジケータ) /
+   landscape-bottom→画面左端 に軸が入れ替わるため、env を対応する辺へ付け替える。
+   これでツール(landscape-right=画面下端)がホームインジケータより内側に収まり、切れない */
+#stage.rot #bar{
+  left:calc(6vmax + env(safe-area-inset-top));
+  right:calc(6vmax + env(safe-area-inset-bottom));
+  bottom:calc(1.8vmin + env(safe-area-inset-left));
 }
 #fps{
   flex:0 0 auto;
@@ -164,20 +174,19 @@ const fpsEl = document.getElementById('fps');
 let startTime = 0, elapsed = 0, running = false;
 
 // 常に横レイアウト: 縦持ち時はステージを実ピクセルで横向きに組んで 90° 回転。
-// 寸法は不安定な innerWidth/innerHeight ではなく、向きに依存しない物理画面px
-// (screen.width/height) から組む → iOS standalone で innerHeight が実画面高より
-// 小さく/stale に返り「ステージが下端まで届かず中身が上に寄る」現象を回避。
+// 寸法は「実使用領域」= visualViewport (無ければ inner) から組む。
+//   ・screen (物理全体) を使うと standalone で下端ツールがホームインジケータ帯に
+//     押し出されて切れる (v23 の不具合)。
+//   ・innerWidth/innerHeight / visualViewport / docEl は実測で一致が確認でき、
+//     これが信頼できる実使用領域。
 const stageEl = document.getElementById('stage');
 function layoutStage(){
-  const sw = screen.width  || window.innerWidth;
-  const sh = screen.height || window.innerHeight;
-  const LONG  = Math.max(sw, sh);
-  const SHORT = Math.min(sw, sh);
-  const portrait = window.matchMedia('(orientation: portrait)').matches
-                   || window.innerHeight > window.innerWidth;
-  if (portrait){          // 縦持ち → 横レイアウトを回転表示 (画面全体を確実に充填)
-    stageEl.style.width  = LONG  + 'px';
-    stageEl.style.height = SHORT + 'px';
+  const vv = window.visualViewport;
+  const w = vv ? Math.round(vv.width)  : window.innerWidth;
+  const h = vv ? Math.round(vv.height) : window.innerHeight;
+  if (h > w){             // 縦持ち → 横レイアウトを回転表示 (実使用領域を充填)
+    stageEl.style.width  = h + 'px';   // 長辺
+    stageEl.style.height = w + 'px';   // 短辺
     stageEl.classList.add('rot');
   } else {                // 横持ち → 通常
     stageEl.style.width  = '';
