@@ -62,7 +62,7 @@ body{ color:var(--fg); cursor:pointer; }
   position:absolute;
   left:6vmax;
   right:6vmax;
-  bottom:1.6vmin;
+  bottom:calc(env(safe-area-inset-bottom) + 3.4vmin);
   display:flex;
   align-items:center;
   justify-content:space-between;
