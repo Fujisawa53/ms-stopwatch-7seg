@@ -193,7 +193,7 @@ document.getElementById('reset').addEventListener('click', e => {
   reset();
 });
 // パレット: タップで全体の文字色を循環切替 (選択は保存)
-const FG_COLORS = ['#0FA03E','#FFFFFF','#DC143C','#FF9500','#FFD60A','#64D2FF','#3F51B5','#BF5AF2'];
+const FG_COLORS = ['#0FA03E','#FFFFFF','#DC143C','#FF9500','#FFD60A','#64D2FF','#1D4ED8','#BF5AF2'];
 let fgIndex = 0;
 function applyFg(){
   document.documentElement.style.setProperty('--fg', FG_COLORS[fgIndex]);
