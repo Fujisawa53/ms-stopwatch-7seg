@@ -46,13 +46,22 @@ body{
   /* 視覚的中心がやや上寄りに見えるため、少し下げる */
   transform:translateY(8%);
 }
-/* 下部の小さな fps 表示 */
-#fps{
+/* 下部バー: 左=FPS / 中央=カラードット / 右=RESET */
+#bar{
   position:fixed;
   left:0;
   right:0;
-  bottom:calc(env(safe-area-inset-bottom) + 2vh);
-  text-align:center;
+  bottom:calc(env(safe-area-inset-bottom) + 1.6vh);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 calc(env(safe-area-inset-right) + 5vw) 0 calc(env(safe-area-inset-left) + 5vw);
+  gap:3vw;
+}
+#fps{
+  flex:0 0 auto;
+  min-width:9vw;
+  text-align:left;
   font-family:ui-monospace,'SF Mono','Menlo',monospace;
   font-variant-numeric:tabular-nums;
   font-size:1.9vw;
@@ -60,8 +69,37 @@ body{
   letter-spacing:0.14em;
   color:#0FA03E;
   opacity:0.3;
-  pointer-events:none;
 }
+#dots{
+  flex:1 1 auto;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:2.2vw;
+}
+#dots span{
+  width:2.3vw;
+  height:2.3vw;
+  border-radius:50%;
+  background:currentColor;
+  box-shadow:0 0 6px currentColor;
+}
+#reset{
+  flex:0 0 auto;
+  min-width:9vw;
+  text-align:right;
+  font-family:ui-monospace,'SF Mono','Menlo',monospace;
+  font-size:1.9vw;
+  font-weight:600;
+  letter-spacing:0.14em;
+  color:#0FA03E;
+  opacity:0.42;
+  background:none;
+  border:none;
+  padding:1.4vw 0;
+  cursor:pointer;
+}
+#reset:active{opacity:0.9}
 /* 横位置(推奨): 幅基準で「S.MMM」が必ず収まり最大化 */
 #sec, #dot{
   font-size:14vw;
@@ -84,7 +122,13 @@ body{
 <div id="display">
   <span id="sec">0</span><span id="dot">.</span><span id="ms">000</span>
 </div>
-<div id="fps">--FPS</div>
+<div id="bar">
+  <div id="fps">--FPS</div>
+  <div id="dots">
+    <span style="color:#FF3B30"></span><span style="color:#FF9500"></span><span style="color:#FFD60A"></span><span style="color:#30D158"></span><span style="color:#64D2FF"></span><span style="color:#0A84FF"></span><span style="color:#BF5AF2"></span>
+  </div>
+  <button id="reset" type="button">RESET</button>
+</div>
 <script>
 'use strict';
 const secEl = document.getElementById('sec');
@@ -140,6 +184,17 @@ document.body.addEventListener('pointerup', () => {
 });
 document.body.addEventListener('pointercancel', () => clearTimeout(holdTimer));
 document.addEventListener('dblclick', e => e.preventDefault());
+
+// 下部バーはタップしても start/stop を発火させない (中央の計時表示だけが操作対象)
+const bar = document.getElementById('bar');
+['pointerdown','pointerup','pointercancel'].forEach(ev =>
+  bar.addEventListener(ev, e => { clearTimeout(holdTimer); e.stopPropagation(); })
+);
+// RESET ボタン
+document.getElementById('reset').addEventListener('click', e => {
+  e.stopPropagation();
+  reset();
+});
 document.addEventListener('visibilitychange', () => {
   if (document.hidden && running){
     elapsed += performance.now() - startTime;
