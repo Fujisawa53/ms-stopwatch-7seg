@@ -216,9 +216,11 @@ function recenter(){
   const r = displayEl.getBoundingClientRect();
   const cx = r.left + r.width  / 2;
   const cy = r.top  + r.height / 2;
-  const vv = window.visualViewport;
-  const tx = vv ? vv.offsetLeft + vv.width  / 2 : window.innerWidth  / 2;
-  const ty = vv ? vv.offsetTop  + vv.height / 2 : window.innerHeight / 2;
+  // 目標 = レイアウトビューポート(cover PWA では物理画面全体)の中心 = 人が見る画面中央。
+  // getBoundingClientRect と同じ座標系なので差がそのまま補正量になる。
+  const de = document.documentElement;
+  const tx = (de.clientWidth  || window.innerWidth)  / 2;
+  const ty = (de.clientHeight || window.innerHeight) / 2;
   stageEl.style.setProperty('--corx', (tx - cx).toFixed(2) + 'px');
   stageEl.style.setProperty('--cory', (ty - cy).toFixed(2) + 'px');
   updateDebug();
@@ -234,7 +236,7 @@ function getSafe(){
   return `${s.paddingTop}/${s.paddingRight}/${s.paddingBottom}/${s.paddingLeft}`;
 }
 function updateDebug(){
-  if (location.hash !== '#debug'){ return; }
+  if (location.hash !== '#debug'){ dbgEl.style.display='none'; crossEl.style.display='none'; return; }
   dbgEl.style.display = 'block';
   crossEl.style.display = 'block';
   const vv = window.visualViewport;
@@ -248,6 +250,24 @@ function updateDebug(){
 }
 window.addEventListener('hashchange', layoutStage);
 layoutStage();
+// iOS standalone はロード直後にビューポート寸法が遅れて確定することがあるため、
+// 時間差で recenter を当て直す + 表示復帰 / visualViewport のスクロール変化でも再補正
+[60, 200, 500, 1000].forEach(t => setTimeout(() => requestAnimationFrame(recenter), t));
+window.addEventListener('pageshow', () => requestAnimationFrame(recenter));
+if (window.visualViewport) window.visualViewport.addEventListener('scroll', () => requestAnimationFrame(recenter));
+// 「60FPS」を 3 回タップで #debug 表示を ON/OFF（インストール済みアプリのまま実数値を確認できる）
+let fpsTaps = 0, fpsTapTimer = null;
+fpsEl.addEventListener('click', (e) => {
+  e.stopPropagation();
+  fpsTaps++;
+  clearTimeout(fpsTapTimer);
+  fpsTapTimer = setTimeout(() => { fpsTaps = 0; }, 1500);
+  if (fpsTaps >= 3){
+    fpsTaps = 0;
+    location.hash = (location.hash === '#debug') ? '' : '#debug';
+    layoutStage();
+  }
+});
 
 function render(t){
   const total = Math.floor(t);
