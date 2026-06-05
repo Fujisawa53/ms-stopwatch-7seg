@@ -1,6 +1,7 @@
 // 単純な cache-first Service Worker（オフライン起動用）
-const CACHE = 'stopwatch-v8';
-const ASSETS = ['./', './index.html', './manifest.webmanifest'];
+const CACHE = 'mscounter-v9';
+const ASSETS = ['./', './index.html', './manifest.webmanifest',
+  './icons/icon-180.png', './icons/icon-192.png', './icons/icon-512.png'];
 
 self.addEventListener('install', (e) => {
   self.skipWaiting();
