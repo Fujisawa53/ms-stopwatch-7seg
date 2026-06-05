@@ -40,15 +40,12 @@ body{ color:var(--fg); cursor:pointer; }
   /* 左右はノッチ/インカメラ回避のため最低 6vmax 確保 (長辺基準) */
   padding:0 6vmax;
 }
-@media (orientation: portrait){
-  #stage{
-    inset:auto;
-    top:50%;
-    left:50%;
-    width:100vh;
-    height:100vw;
-    transform:translate(-50%,-50%) rotate(90deg);
-  }
+/* 縦持ち時: JS が実ピクセルで width/height を付与し .rot を付ける (iOS の vh/vw 不正確さ回避) */
+#stage.rot{
+  inset:auto;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%) rotate(90deg);
 }
 #display{
   display:flex;
@@ -62,7 +59,7 @@ body{ color:var(--fg); cursor:pointer; }
   position:absolute;
   left:6vmax;
   right:6vmax;
-  bottom:calc(env(safe-area-inset-bottom) + 3.4vmin);
+  bottom:calc(env(safe-area-inset-bottom) + 1.8vmin);
   display:flex;
   align-items:center;
   justify-content:space-between;
@@ -145,6 +142,23 @@ const secEl = document.getElementById('sec');
 const msEl  = document.getElementById('ms');
 const fpsEl = document.getElementById('fps');
 let startTime = 0, elapsed = 0, running = false;
+
+// 常に横レイアウト: 縦持ち時はステージを実ピクセルで横向きに組んで 90° 回転
+const stageEl = document.getElementById('stage');
+function layoutStage(){
+  const w = window.innerWidth, h = window.innerHeight;
+  if (h > w){           // 縦持ち → 横レイアウトを回転表示
+    stageEl.style.width  = h + 'px';
+    stageEl.style.height = w + 'px';
+    stageEl.classList.add('rot');
+  } else {              // 横持ち → 通常
+    stageEl.style.width  = '';
+    stageEl.style.height = '';
+    stageEl.classList.remove('rot');
+  }
+}
+['resize','orientationchange'].forEach(ev => window.addEventListener(ev, layoutStage));
+layoutStage();
 
 function render(t){
   const total = Math.floor(t);
