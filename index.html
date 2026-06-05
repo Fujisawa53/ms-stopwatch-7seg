@@ -40,12 +40,14 @@ body{ color:var(--fg); cursor:pointer; }
   /* 左右はノッチ/インカメラ回避のため最低 6vmax 確保 (長辺基準) */
   padding:0 6vmax;
 }
-/* 縦持ち時: JS が実ピクセルで width/height を付与し .rot を付ける (iOS の vh/vw 不正確さ回避) */
+/* 縦持ち時: JS が実ピクセル width/height(=innerHeight/innerWidth) を付与し .rot を付ける。
+   角アンカー + rotate で viewport にピッタリ充填 (top:50% 等のビューポート% に依存せず iOS でもズレない) */
 #stage.rot{
   inset:auto;
-  top:50%;
-  left:50%;
-  transform:translate(-50%,-50%) rotate(90deg);
+  top:0;
+  left:0;
+  transform-origin:top left;
+  transform:rotate(90deg) translateY(-100%);
 }
 #display{
   display:flex;
