@@ -216,11 +216,18 @@ function recenter(){
   const r = displayEl.getBoundingClientRect();
   const cx = r.left + r.width  / 2;
   const cy = r.top  + r.height / 2;
-  // 目標 = レイアウトビューポート(cover PWA では物理画面全体)の中心 = 人が見る画面中央。
-  // getBoundingClientRect と同じ座標系なので差がそのまま補正量になる。
+  // 目標 = 物理スクリーンの中心(=人が見るガラスの真ん中)を layout 座標へ変換。
+  // iOS standalone は cover でも上端 safe 分だけ layout viewport が物理上端より下がる
+  // (実測: screen 874 / docEl 812 → 上に 62px オフセット)。docEl 中心だとその分だけ下にズレる。
+  // target_layout = 物理中心 − 上端オフセット = screen/2 − (screen − docEl) = docEl − screen/2。
+  // (オフセットが無い環境では docEl − screen/2 = docEl/2 となり通常の中央に一致)
   const de = document.documentElement;
-  const tx = (de.clientWidth  || window.innerWidth)  / 2;
-  const ty = (de.clientHeight || window.innerHeight) / 2;
+  const dw = de.clientWidth  || window.innerWidth;
+  const dh = de.clientHeight || window.innerHeight;
+  const scrW = screen.width  || dw;
+  const scrH = screen.height || dh;
+  const tx = dw - scrW / 2;
+  const ty = dh - scrH / 2;
   stageEl.style.setProperty('--corx', (tx - cx).toFixed(2) + 'px');
   stageEl.style.setProperty('--cory', (ty - cy).toFixed(2) + 'px');
   updateDebug();
