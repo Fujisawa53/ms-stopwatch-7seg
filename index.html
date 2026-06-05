@@ -109,6 +109,21 @@ body{ color:var(--fg); cursor:pointer; }
   font-size:25vmax;
   margin-left:0.04em;
 }
+/* ▼ 診断用: URL に #debug を付けた時だけ表示 (実測値オーバーレイ + 中心クロスヘア) */
+#dbg{
+  position:fixed; top:env(safe-area-inset-top); left:0; right:0; z-index:99;
+  display:none; padding:3px 6px; text-align:center;
+  font:600 11px/1.4 ui-monospace,'SF Mono',monospace; letter-spacing:0;
+  color:#0FA03E; background:rgba(0,0,0,0.62);
+}
+#cross{ position:fixed; inset:0; z-index:98; display:none; pointer-events:none; }
+#cross::before{ content:''; position:absolute; top:50%; left:0; right:0; height:1px; background:#0FA03E; opacity:0.55; }
+#cross::after{ content:''; position:absolute; left:50%; top:0; bottom:0; width:1px; background:#0FA03E; opacity:0.55; }
+/* safe-area 実測用プローブ (不可視) */
+#safeprobe{
+  position:fixed; top:0; left:0; width:0; height:0; visibility:hidden; pointer-events:none;
+  padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
 </style>
 </head>
 <body>
@@ -138,6 +153,9 @@ body{ color:var(--fg); cursor:pointer; }
   </div>
 </div>
 </div>
+<div id="cross"></div>
+<div id="dbg"></div>
+<div id="safeprobe"></div>
 <script>
 'use strict';
 const secEl = document.getElementById('sec');
@@ -145,21 +163,52 @@ const msEl  = document.getElementById('ms');
 const fpsEl = document.getElementById('fps');
 let startTime = 0, elapsed = 0, running = false;
 
-// 常に横レイアウト: 縦持ち時はステージを実ピクセルで横向きに組んで 90° 回転
+// 常に横レイアウト: 縦持ち時はステージを実ピクセルで横向きに組んで 90° 回転。
+// 寸法は不安定な innerWidth/innerHeight ではなく、向きに依存しない物理画面px
+// (screen.width/height) から組む → iOS standalone で innerHeight が実画面高より
+// 小さく/stale に返り「ステージが下端まで届かず中身が上に寄る」現象を回避。
 const stageEl = document.getElementById('stage');
 function layoutStage(){
-  const w = window.innerWidth, h = window.innerHeight;
-  if (h > w){           // 縦持ち → 横レイアウトを回転表示
-    stageEl.style.width  = h + 'px';
-    stageEl.style.height = w + 'px';
+  const sw = screen.width  || window.innerWidth;
+  const sh = screen.height || window.innerHeight;
+  const LONG  = Math.max(sw, sh);
+  const SHORT = Math.min(sw, sh);
+  const portrait = window.matchMedia('(orientation: portrait)').matches
+                   || window.innerHeight > window.innerWidth;
+  if (portrait){          // 縦持ち → 横レイアウトを回転表示 (画面全体を確実に充填)
+    stageEl.style.width  = LONG  + 'px';
+    stageEl.style.height = SHORT + 'px';
     stageEl.classList.add('rot');
-  } else {              // 横持ち → 通常
+  } else {                // 横持ち → 通常
     stageEl.style.width  = '';
     stageEl.style.height = '';
     stageEl.classList.remove('rot');
   }
+  updateDebug();
 }
 ['resize','orientationchange'].forEach(ev => window.addEventListener(ev, layoutStage));
+if (window.visualViewport) window.visualViewport.addEventListener('resize', layoutStage);
+
+// 診断: URL に #debug が付いている時だけ、実測値とクロスヘアを表示
+const dbgEl = document.getElementById('dbg');
+const crossEl = document.getElementById('cross');
+function getSafe(){
+  const s = getComputedStyle(document.getElementById('safeprobe'));
+  return `${s.paddingTop}/${s.paddingRight}/${s.paddingBottom}/${s.paddingLeft}`;
+}
+function updateDebug(){
+  if (location.hash !== '#debug'){ return; }
+  dbgEl.style.display = 'block';
+  crossEl.style.display = 'block';
+  const vv = window.visualViewport;
+  dbgEl.textContent =
+    `inner ${window.innerWidth}x${window.innerHeight} | `+
+    `screen ${screen.width}x${screen.height} | `+
+    `vv ${vv ? Math.round(vv.width)+'x'+Math.round(vv.height)+'@y'+Math.round(vv.offsetTop) : '-'} | `+
+    `docEl ${document.documentElement.clientWidth}x${document.documentElement.clientHeight} | `+
+    `safe ${getSafe()}`;
+}
+window.addEventListener('hashchange', layoutStage);
 layoutStage();
 
 function render(t){
